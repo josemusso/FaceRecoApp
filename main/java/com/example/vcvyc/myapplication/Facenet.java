@@ -28,6 +28,7 @@ import java.nio.IntBuffer;
  */
 public class Facenet{
     private static final String MODEL_FILE  = "file:///android_asset/20180402-114759.pb";
+//    private static final String MODEL_FILE  = "file:///android_asset/20180408-102900.pb";
     private static final String INPUT_NAME  = "input:0";
     private static final String OUTPUT_NAME = "embeddings:0";
     private static final String PHASE_NAME  = "phase_train:0";

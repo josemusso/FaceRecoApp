@@ -75,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
     // funcion para cargar fotos de enroll en espacio de vectores
 
     public boolean loadEnrollImgs(){
-        final TextView textView4=(TextView)findViewById(R.id.textView4);
         try {
             String personList[] = getAssets().list("database/enroll");   // lista de personas
             int totalPers = personList.length;
@@ -99,6 +98,42 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public boolean loadRecoImgs(){
+        try {
+            String personList[] = getAssets().list("database/reco");   // lista de personas
+            int totalPers = personList.length;
+            int cnt = 0;
+            for (String person: personList){       // carpeta de personas
+                String imgList[] = getAssets().list("database/reco/"+person);  // aqui puede fallar /
+                if (imgList.length < 8) continue;
+                cnt++;
+                String cntString = "Personas: "+cnt+" de "+totalPers;
+                int cntCincoFotos = 0;
+                for (String img: imgList){
+                    cntCincoFotos++;
+                    if (cntCincoFotos > 5) break;   // tomar solo primeras 5 fotos
+                    Log.d("loadRecoImgs", cntString);
+                    bmpEnroll = readFromAssets("database/reco/"+person+"/"+img);
+
+                    try {
+                        FaceFeature vector = getEmbedding(bmpEnroll);      // devuelve FaceFeature
+                    float[] embedding = vector.getFeature();        // devuelve Embedding
+                    Log.d("loadRecoImgs", "Ingresando--- Persona: "+person+", Foto: "+img);
+                    agregarEmbedding(person, embedding);         // agregar Embedding a espacio
+                    }
+                    catch (ArrayIndexOutOfBoundsException e) {
+                        cntCincoFotos--;
+                        Log.d("loadRecoImgs", "SALTADA");
+                        continue;
+                    }
+                }
+            }
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     public float getPrecision(){
         try {
             int totalFotos = 0;     // contador total fotos VALIDADAS
@@ -110,20 +145,22 @@ public class MainActivity extends AppCompatActivity {
             int cntConfundido = 0;  // contador pers confundidas por otra
             int cntNF = 0;          // contador personas sin cercanos
             for (String person: personList){       // carpeta de personas
+                int cntNroFoto=0;       // contador para saltar primeras 5 fotos
                 String imgList[] = getAssets().list("database/reco/"+person);
-                int nroFotos = 0;   // contador max 5 fotos por persona para validar
                 cnt++;
                 String cntString = "Personas: "+cnt+" de "+totalPers;
                 for (String img: imgList){
-                    nroFotos++;
-                    if (nroFotos >5){ break;} // max 5 fotos por persona
-                    totalFotos++;
+                    if (imgList.length < 8) continue;
+                    cntNroFoto++;
+                    if (cntNroFoto <5) continue;  // saltarse primeras 5 fotos
+                    if (cntNroFoto >10) break;        // terminar de pasar las fotos
                     Log.d("MainActivity", cntString);
                     bmpReco = readFromAssets("database/reco/"+person+"/"+img);
                     try {
                         FaceFeature vector = getEmbedding(bmpReco); // devuelve FaceFeature
                         float[] embedding = vector.getFeature();        // devuelve Embedding
                         String prediccion = buscarCercano(embedding);
+                        totalFotos++;
                         if (prediccion.equals("No hay cercano")){
                             cntNF++;
                             Log.d("Prediccion", "ERROR(" + prediccion + ")--- Persona: " +
@@ -228,9 +265,9 @@ public class MainActivity extends AppCompatActivity {
         String resultado = "No Encontrado";
         if (cercanos.isEmpty()) return "No hay cercano";
 
-        ArrayList<String> top5 = new ArrayList<>();
+        ArrayList<String> top3 = new ArrayList<>();
         // ordenar y obtener el mas cercano
-        for (int i = 0; i<5; i++) {
+        for (int i = 0; i<3; i++) {
             double minPrev = 10000;
             for (String s : cercanos.keySet()) {   // cada key
                 for (Double r : cercanos.get(s)) {    // cada distancia
@@ -241,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             // agregar a lista top5
-            top5.add(resultado);
+            top3.add(resultado);
             // remover valor
             List<Double> listaCercanos = cercanos.get(resultado);
             listaCercanos.remove(minPrev);
@@ -250,8 +287,8 @@ public class MainActivity extends AppCompatActivity {
 
         int frec = 0;
         String masCercano = "No Encontrado";
-        for (String name : top5){
-            if (Collections.frequency(top5,name)>frec){
+        for (String name : top3){
+            if (Collections.frequency(top3,name)>frec){
                 masCercano = name;
             }
         }
@@ -385,12 +422,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // BOTON PARA CARGAR DATASET ENROLL
-            Button btn3=(Button)findViewById(R.id.button3); // BOTON GRANDE RECONOCER
+            Button btn3=(Button)findViewById(R.id.button3);
             btn3.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     textView4.setText("Cargando Dataset");
-                    loadEnrollImgs();
+//                    loadEnrollImgs();
+                    loadRecoImgs();
                     textView4.setText(" Enroll Dataset Cargado");
                     Log.d("MainActivity", "ENROLL DATASET IMPORTADO CORRECTAMENTE");
 
@@ -398,7 +436,7 @@ public class MainActivity extends AppCompatActivity {
             });
 
             // BOTON PARA OBTENER PRECISION
-            Button btn4=(Button)findViewById(R.id.button4); // BOTON GRANDE RECONOCER
+            Button btn4=(Button)findViewById(R.id.button4);
             btn4.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
