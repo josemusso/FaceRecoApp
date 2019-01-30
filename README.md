@@ -6,7 +6,9 @@ El proyecto se implementa como una rama del proyecto Android-Facenet: https://gi
 
 Dentro de la aplicacion se puede realizar tanto el enrolamiento como el reconocimiento de un individuo. Ademas los botones "CARGAR DATASET" y "OBTENER PRECISION" sirven para cargar un dataset especifico al clasificador y el segundo para validar el modelo mostrando al final de la ejecucion la precision obtenida por el modelo. Su ejemplo de uso se presenta a continuacion:
 
-![Alt text](Screenshot.png)
+<p align="center">
+        <img src="https://github.com/josemusso/FaceRecoApp/blob/master/Screenshot.png"/>
+</p>
 
 Para el reconocimiento facial se utiliza una red Facenet desarrollada por David Sandberg (https://github.com/davidsandberg/facenet) con el preentrenamiento 20180402-114759.
 
@@ -36,5 +38,7 @@ La imagen a reconocer pasa por la red para obtener su vecotr de caracteristicas,
         - Probablemente el dispositivo se quede congelado al rededor de 5 a 10 minutos al momento de validar el modelo.
         - Al finalizar se muestra bajo la imagen la precision obtenida por el modelo
         
-COMPOSICION DEL ARCHIVO APK:
+# COMPOSICION DEL ARCHIVO APK:
+
 ![Alt text](Composicion.png)
+
